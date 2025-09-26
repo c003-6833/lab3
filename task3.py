@@ -49,6 +49,7 @@ for i in final_list:
 
 with open("failed_counts.txt", "w") as f:
     for line in final_list:
+        f.write("ip,failed_count\n")
         f.write(str(final_list))  # writing the whole list each time!
 
 
