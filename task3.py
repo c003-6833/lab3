@@ -1,41 +1,62 @@
 import re
-from collections import defaultdict
 import time
+from collections import defaultdict
 
-def ip_parse(line: str) -> str | None:
-    # Extract IPv4 address from a line using regex
-    match = re.search(r"\d+\.\d+\.\d+\.\d+", line)
-    return match.group(0) if match else None
+LOGFILE = "sample_auth_small.log"  # change filename if needed
 
-def top_n(counts: dict, n=5):
-    # Return top n IPs sorted by count descending
-    return sorted(counts.items(), key=lambda kv: kv[1], reverse=True)[:n]
+def ip_parser(line):
+    """
+    looks for the substring ' port ' and returns the following port number.
+    Returns None if no matching substring found.
+    """
+    if " from " in line:
+        parts = line.split() # splits the line into tokens, seperates by spaces by default
+        try:
+            anchor = parts.index("from")    # Find the position of the token "ip", our anchor
+            port = parts[anchor+1]          # the port value will be next token, anchor+1
+            return port.strip()             # strip any trailing punctuation
 
-# Start timing
+        except (ValueError, IndexError):
+            return None
+
+    return None
+
+LOGFILE = "sample_auth_small.log"
+
+# run counting
 start = time.time()
-
-counts = defaultdict(int)
+counts = defaultdict(int)  # Create a dictionary to keep track of IPs
 
 with open("sample_auth_small.log") as f:
     for line in f:
         if "Failed password" in line or "Invalid user" in line:
-            ip = ip_parse(line)
+            ip = ip_parser(line)
             if ip:
                 counts[ip] += 1
 
-# End timing
+
+def top_n(counts, n=5):
+    return sorted(counts.items(), key=lambda kv: kv[1], reverse=True)[:n]
+
+top_ips=top_n(counts , 5)
+
+print("top five attacker ips:")
+final_list = top_n(counts, 5)
+rank = 0
+for i in final_list:
+    rank += 1
+    print(rank, ":", i[0], "-",i[1])
+
+with open("failed_counts.txt", "w") as f:
+    for line in final_list:
+        f.write(str(final_list))  # writing the whole list each time!
+
+
+# end counting
 end = time.time()
 
-# Print Top 5 IPs
-print("\nTop 5 IPs by failed login attempts:")
-for rank, (ip, count) in enumerate(top_n(counts, 5), start=1):
-    print(f"{rank}. {ip} — {count}")
+print("wrote failed_counts.txt")
+print("Elapsed:", end-start, "seconds")
 
-# Write full counts to file
-with open("failed_counts.txt", "w") as out_file:
-    out_file.write("ip,failed_count\n")
-    for ip, count in counts.items():
-        out_file.write(f"{ip},{count}\n")
 
-# Print elapsed time
-print(f"\nElapsed: {end - start:.4f} seconds")
+
