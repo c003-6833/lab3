@@ -3,9 +3,9 @@ from collections import defaultdict
 
 def ip_parse(line: str) -> str | None:
     # Regex for IPv4 addresses
-    match = re.search(r'(\d{1,3}(?:\.\d{1,3}){3})', line)
+    match = re.search(r"\d+\.\d+\.\d+\.\d+", line)
     if match:
-        return match.group(1)
+        return match.group(0)
     return None
 
 counts = defaultdict(int)  # Create a dictionary to keep track of IPs

@@ -4,8 +4,8 @@ import time
 
 def ip_parse(line: str) -> str | None:
     # Extract IPv4 address from a line using regex
-    match = re.search(r'(\d{1,3}(?:\.\d{1,3}){3})', line)
-    return match.group(1) if match else None
+    match = re.search(r"\d+\.\d+\.\d+\.\d+", line)
+    return match.group(0) if match else None
 
 def top_n(counts: dict, n=5):
     # Return top n IPs sorted by count descending
